@@ -1,0 +1,20 @@
+# LiveKit configuration for development
+port: 7880
+bind_addresses:
+  - "0.0.0.0"
+use_external_ip: false
+
+# RTC configuration
+rtc:
+  port_range_start: 50000
+  port_range_end: 60000
+  use_external_ip: false
+
+# Keys
+keys:
+  devkey: secret
+
+# Logging
+logging:
+  level: debug
+  sample: false

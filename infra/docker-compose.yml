@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  # LiveKit server for WebRTC
+  livekit:
+    image: livekit/livekit-server:v1.5.0
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "7882:7882/udp"
+    environment:
+      LIVEKIT_API_KEY: "devkey"
+      LIVEKIT_API_SECRET: "secret"
+      LIVEKIT_BIND_ADDRESSES: "0.0.0.0"
+      LIVEKIT_USE_EXTERNAL_IP: "false"
+      LIVEKIT_PORT: "7880"
+      LIVEKIT_RTC_PORT: "7881"
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7880/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # SilentCall backend server
+  silentcall-server:
+    build:
+      context: ../apps/server
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      NODE_ENV: development
+      PORT: 8080
+      LIVEKIT_URL: "ws://livekit:7880"
+      TTS_PROVIDER: mock
+    depends_on:
+      livekit:
+        condition: service_healthy
+    volumes:
+      - ../apps/server:/app
+      - /app/node_modules
+    command: npm run dev
+
+volumes:
+  livekit_data:
